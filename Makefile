@@ -1,4 +1,4 @@
-APP_NAME=speedtestd
+APP_NAME=dhcpwatch
 
 all: clean fmt tidy build
 
@@ -27,6 +27,7 @@ setup-tools:
 	docker pull vektra/mockery:v2.5.1
 
 run: clean dev
+	./out/$(APP_NAME)
 
 genmock:
 	docker run --rm -v $$(pwd):/src -w /src vektra/mockery:v2.5.1 --all
