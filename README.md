@@ -1,5 +1,7 @@
 # dhcpwatch
 
+[![build](https://github.com/HandOfGod94/dhcpwatch/actions/workflows/build.yml/badge.svg)](https://github.com/HandOfGod94/dhcpwatch/actions/workflows/build.yml)
+
 It watches dhcp database file changes and exports
 prometheus metrics which can visualized as table on grafana.
 
