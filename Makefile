@@ -12,13 +12,13 @@ tidy:
 	go mod tidy -v
 
 dev:
-	go build -o out/$(APP_NAME) main.go
+	go build -v -o out/$(APP_NAME) main.go
 
 build:
-	go build -ldflags "-w" -o out/$(APP_NAME) main.go
+	go build -v -ldflags "-w" -o out/$(APP_NAME) main.go
 
 pi-build:
-	env GOOS=linux GOARCH=arm go build -ldflags "-w" -o out/$(APP_NAME)-pi main.go
+	env GOOS=linux GOARCH=arm go build -v -ldflags "-w" -o out/$(APP_NAME)-pi main.go
 
 fmt:
 	go fmt ./...
