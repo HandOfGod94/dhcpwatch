@@ -2,6 +2,7 @@ package dhcp
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"regexp"
 	"strings"
 )
@@ -44,15 +45,17 @@ func (l *Lease) UnmarshalText(text []byte) error {
 		return err
 	}
 
-	isActive, err := l.extractIsActive(lines[4])
+	isActive, err := l.extractIsActive(lines)
 	if err != nil {
 		return err
 	}
-	macAddress, err := l.extractMacAddress(lines[7])
+
+	macAddress, err := l.extractMacAddress(lines)
 	if err != nil {
 		return err
 	}
-	hostname, err := l.extractHostname(lines[10])
+
+	hostname, err := l.extractHostname(lines)
 	if err != nil {
 		return err
 	}
@@ -73,9 +76,16 @@ func (l *Lease) extractIp(line string) (string, error) {
 	return s[1], nil
 }
 
-func (l *Lease) extractIsActive(line string) (bool, error) {
+func (l *Lease) extractIsActive(lines []string) (bool, error) {
 	// binding state active;
+	var lineIdx int
 	bindingStateError := &InvalidLeaseFormatError{Arg: "binding state"}
+
+	if lineIdx = findLineWithPrefix(lines, "binding"); lineIdx < 0 {
+		return false, errors.Wrap(bindingStateError, "binding state absent")
+	}
+
+	line := lines[lineIdx]
 	line = strings.TrimSpace(line)
 	line = strings.TrimSuffix(line, ";")
 	s := strings.Split(line, " ")
@@ -89,9 +99,15 @@ func (l *Lease) extractIsActive(line string) (bool, error) {
 	return false, bindingStateError
 }
 
-func (l *Lease) extractMacAddress(line string) (string, error) {
+func (l *Lease) extractMacAddress(lines []string) (string, error) {
 	// hardware ethernet <mac-address>
+	var lineIdx int
 	macAddressError := &InvalidLeaseFormatError{Arg: "mac address"}
+	if lineIdx = findLineWithPrefix(lines, "hardware"); lineIdx < 0 {
+		return "", errors.Wrap(macAddressError, "mac address absent")
+	}
+
+	line := lines[lineIdx]
 	line = strings.TrimSpace(line)
 	line = strings.TrimSuffix(line, ";")
 	s := strings.Split(line, " ")
@@ -106,9 +122,15 @@ func (l *Lease) extractMacAddress(line string) (string, error) {
 	return s[2], nil
 }
 
-func (l *Lease) extractHostname(line string) (string, error) {
+func (l *Lease) extractHostname(lines []string) (string, error) {
 	// client-hostname "MyLocalClient";
+	var lineIdx int
 	hostnameError := &InvalidLeaseFormatError{Arg: "client-hostname"}
+	if lineIdx = findLineWithPrefix(lines, "client-hostname"); lineIdx < 0 {
+		return "", errors.Wrap(hostnameError, "client-hostname absent")
+	}
+
+	line := lines[lineIdx]
 	line = strings.TrimSpace(line)
 	line = strings.TrimSuffix(line, ";")
 	s := strings.Split(line, " ")
@@ -118,4 +140,14 @@ func (l *Lease) extractHostname(line string) (string, error) {
 
 	hostname := strings.ReplaceAll(s[1], `"`, "")
 	return hostname, nil
+}
+
+func findLineWithPrefix(lines []string, prefix string) int {
+	for idx, line := range lines {
+		if strings.HasPrefix(strings.TrimSpace(line), prefix) {
+			return idx
+		}
+	}
+
+	return -1
 }
