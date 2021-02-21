@@ -15,7 +15,7 @@ lease 192.168.0.1 {
   binding state active;
   next binding state free;
   rewind binding state free;
-  hardware ethernet 12:ab:CD:78:91;
+  hardware ethernet 12:ab:CD:78:90:91;
   uid "\001\204\330\033E\023=";
   set vendor-class-identifier = "MSFT 5.0";
   client-hostname "MyLocalClient";

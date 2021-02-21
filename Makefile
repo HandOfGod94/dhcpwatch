@@ -6,7 +6,7 @@ clean:
 	rm -rf out/
 
 test:
-	go test -count=1 -race ./...
+	go test -cover -count=1 -race ./...
 
 tidy:
 	go mod tidy -v
