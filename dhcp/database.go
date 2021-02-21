@@ -2,6 +2,7 @@ package dhcp
 
 import (
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"strings"
 )
@@ -32,10 +33,10 @@ func (ld *LeaseDatabase) UnmarshalText(text []byte) error {
 			err := lease.UnmarshalText([]byte(rawLease))
 
 			if err != nil {
-				return errors.Wrapf(err, "invalid lease content between %d:%d", leaseStart, leaseEnd)
+				logrus.WithError(err).Warnf("skipping lease parsing between %d:%d", leaseStart+1, leaseEnd+1)
+			} else {
+				ld.Leases = append(ld.Leases, lease)
 			}
-
-			ld.Leases = append(ld.Leases, lease)
 
 			fragmentStarted = false
 			fragmentEnded = false
@@ -50,6 +51,8 @@ func (ld *LeaseDatabase) UnmarshalText(text []byte) error {
 }
 
 func ReadDatabase(filename string) (*LeaseDatabase, error) {
+	logrus.WithField("db file", filename)
+
 	content, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to read dhcp database file %v", filename)
@@ -60,5 +63,6 @@ func ReadDatabase(filename string) (*LeaseDatabase, error) {
 		return nil, errors.Wrapf(err, "failed to parse database file %v", filename)
 	}
 
+	logrus.Info("successfully parsed dhcp db file")
 	return leaseDb, err
 }

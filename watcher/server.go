@@ -21,6 +21,7 @@ func Start() {
 			case event, ok := <-watcher.Events:
 				if !ok {
 					logrus.WithField("Ok", ok).Errorf("failed while watching event")
+					return
 				}
 
 				if event.Op&fsnotify.Write == fsnotify.Write {
@@ -40,5 +41,6 @@ func Start() {
 		logrus.WithError(err).Fatal("failed to start watcher")
 	}
 
+	logrus.WithField("db", config.DhcpDbFilePath()).Info("started watcher")
 	<-done
 }

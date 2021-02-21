@@ -96,7 +96,7 @@ func (l *Lease) extractIsActive(lines []string) (bool, error) {
 	if s[2] == "active" {
 		return true, nil
 	}
-	return false, bindingStateError
+	return false, nil
 }
 
 func (l *Lease) extractMacAddress(lines []string) (string, error) {
