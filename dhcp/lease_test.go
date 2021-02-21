@@ -25,57 +25,43 @@ lease 192.168.0.1 {
 )
 
 func TestLease_UnmarshalText(t *testing.T) {
-	type fields struct {
-		Hostname   string
-		Ip         string
-		MacAddress string
-		IsActive   bool
-	}
-	type args struct {
-		text []byte
-	}
 	tests := []struct {
 		name    string
-		fields  fields
-		args    args
+		fields  dhcp.Lease
+		args    []byte
 		wantErr bool
 	}{
 		{
 			name: "should parse to lease for valid data",
-			fields: fields{
+			fields: dhcp.Lease{
 				Hostname:   "MyLocalClient",
 				Ip:         "192.168.0.1",
 				MacAddress: "12:ab:CD:78:90:91",
 				IsActive:   true,
 			},
-			args:    args{[]byte(validLease)},
+			args:    []byte(validLease),
 			wantErr: false,
 		},
 		{
 			name:    "should return error for invalid data",
-			args:    args{[]byte(invalidLease)},
+			args:    []byte(invalidLease),
 			wantErr: true,
 		},
 		{
 			name: "should return error for invalid mac address",
-			args: args{text: []byte(`
+			args: []byte(`
 					lease 192.168.0.1 {
 						hardware ethernet fo:ba:rf:iz;
-					}
-					`),
-			},
+					}`),
 			wantErr: true,
 		},
 		{
-			name:   "should return error when client-hostname is absent",
-			fields: fields{},
-			args: args{text: []byte(`
+			name: "should return error when client-hostname is absent",
+			args: []byte(`
 					lease 192.168.0.1 {
   						binding state active;
   						hardware ethernet 12:ab:CD:78:90:91;
-					}
-					`),
-			},
+					}`),
 			wantErr: true,
 		},
 	}
@@ -88,7 +74,7 @@ func TestLease_UnmarshalText(t *testing.T) {
 				IsActive:   tt.fields.IsActive,
 			}
 			actual := dhcp.Lease{}
-			err := actual.UnmarshalText(tt.args.text)
+			err := actual.UnmarshalText(tt.args)
 
 			if tt.wantErr {
 				assert.Error(t, err, tt.name)
