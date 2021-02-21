@@ -8,6 +8,7 @@ import (
 )
 
 func Start() {
+	logrus.SetLevel(config.LogLevel())
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		logrus.Fatal(err)

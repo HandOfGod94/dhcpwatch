@@ -33,7 +33,9 @@ func (ld *LeaseDatabase) UnmarshalText(text []byte) error {
 			err := lease.UnmarshalText([]byte(rawLease))
 
 			if err != nil {
-				logrus.WithError(err).Warnf("skipping lease parsing between %d:%d", leaseStart+1, leaseEnd+1)
+				logrus.
+					WithError(err).
+					Warnf("skipping lease parsing between lines %d:%d", leaseStart+1, leaseEnd+1)
 			} else {
 				ld.Leases = append(ld.Leases, lease)
 			}
