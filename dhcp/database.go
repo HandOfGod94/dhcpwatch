@@ -2,6 +2,7 @@ package dhcp
 
 import (
 	"github.com/pkg/errors"
+	"io/ioutil"
 	"strings"
 )
 
@@ -46,4 +47,18 @@ func (ld *LeaseDatabase) UnmarshalText(text []byte) error {
 	}
 
 	return nil
+}
+
+func ReadDatabase(filename string) (*LeaseDatabase, error) {
+	content, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to read dhcp database file %v", filename)
+	}
+
+	leaseDb := &LeaseDatabase{}
+	if err := leaseDb.UnmarshalText(content); err != nil {
+		return nil, errors.Wrapf(err, "failed to parse database file %v", filename)
+	}
+
+	return leaseDb, err
 }

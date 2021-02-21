@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/handofgod94/dhcpwatch/watcher"
 	"github.com/spf13/cobra"
 	"os"
 
@@ -15,7 +16,9 @@ var rootCmd = &cobra.Command{
 	Use:   "dhcpwatch",
 	Short: "Start dhcp watcher server",
 	Long:  `Start watcher. It exposes metrics at "/metrics" endpoint`,
-	Run:   func(cmd *cobra.Command, args []string) {},
+	Run: func(cmd *cobra.Command, args []string) {
+		watcher.Start()
+	},
 }
 
 func Execute() {
