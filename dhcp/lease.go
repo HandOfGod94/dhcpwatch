@@ -2,8 +2,11 @@ package dhcp
 
 import (
 	"fmt"
+	"github.com/handofgod94/dhcpwatch/instrument"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -45,26 +48,25 @@ func (l *Lease) UnmarshalText(text []byte) error {
 		return err
 	}
 
-	isActive, err := l.extractIsActive(lines)
-	if err != nil {
-		return err
-	}
-
-	macAddress, err := l.extractMacAddress(lines)
-	if err != nil {
-		return err
-	}
-
-	hostname, err := l.extractHostname(lines)
-	if err != nil {
-		return err
-	}
+	isActive, _ := l.extractIsActive(lines)
+	hostname, _ := l.extractHostname(lines)
+	macAddress, _ := l.extractMacAddress(lines)
 
 	l.Ip = ip
 	l.IsActive = isActive
 	l.MacAddress = macAddress
 	l.Hostname = hostname
+	l.publish()
 	return nil
+}
+
+func (l *Lease) publish() {
+	logrus.Debug("publishing prometheus events")
+	instrument.DhcpTable.WithLabelValues(
+		l.Hostname,
+		l.Ip, l.MacAddress,
+		strconv.FormatBool(l.IsActive),
+	).SetToCurrentTime()
 }
 
 func (l *Lease) extractIp(line string) (string, error) {

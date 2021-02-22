@@ -4,7 +4,9 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/handofgod94/dhcpwatch/config"
 	"github.com/handofgod94/dhcpwatch/dhcp"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	"net/http"
 )
 
 func Start() {
@@ -15,7 +17,6 @@ func Start() {
 	}
 	defer watcher.Close()
 
-	done := make(chan bool)
 	go func() {
 		for {
 			select {
@@ -43,5 +44,8 @@ func Start() {
 	}
 
 	logrus.WithField("db", config.DhcpDbFilePath()).Info("started watcher")
-	<-done
+
+	logrus.WithField("Address", config.Addr()).Info("Starting server")
+	http.Handle("/metrics", promhttp.Handler())
+	logrus.Fatal(http.ListenAndServe(config.Addr(), nil))
 }

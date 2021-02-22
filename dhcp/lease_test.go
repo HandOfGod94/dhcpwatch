@@ -48,21 +48,27 @@ func TestLease_UnmarshalText(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "should return error for invalid mac address",
+			name:   "should return empty for invalid mac address",
+			fields: dhcp.Lease{Ip: "192.168.0.1"},
 			args: []byte(`
 					lease 192.168.0.1 {
 						hardware ethernet fo:ba:rf:iz;
 					}`),
-			wantErr: true,
+			wantErr: false,
 		},
 		{
-			name: "should return error when client-hostname is absent",
+			name: "should not return error when client-hostname is absent",
+			fields: dhcp.Lease{
+				Ip:         "192.168.0.1",
+				IsActive:   true,
+				MacAddress: "12:ab:CD:78:90:91",
+			},
 			args: []byte(`
 					lease 192.168.0.1 {
   						binding state active;
   						hardware ethernet 12:ab:CD:78:90:91;
 					}`),
-			wantErr: true,
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
