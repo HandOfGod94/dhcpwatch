@@ -8,15 +8,21 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
-const macAddressRegexp = `([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})`
+const (
+	macAddressRegexp = `([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})`
+	timeLayout       = "2006/01/02 15:04:05"
+)
 
 type Lease struct {
 	Hostname   string
 	Ip         string
 	MacAddress string
 	IsActive   bool
+	LeaseStart time.Time
+	LeaseEnd   time.Time
 }
 
 type InvalidLeaseFormatError struct {
@@ -48,6 +54,16 @@ func (l *Lease) UnmarshalText(text []byte) error {
 		return err
 	}
 
+	leaseStart, err := l.extractLeaseStart(lines)
+	if err != nil {
+		return err
+	}
+
+	leaseEnd, err := l.extractLeaseEnd(lines)
+	if err != nil {
+		return err
+	}
+
 	isActive, _ := l.extractIsActive(lines)
 	hostname, _ := l.extractHostname(lines)
 	macAddress, _ := l.extractMacAddress(lines)
@@ -56,6 +72,8 @@ func (l *Lease) UnmarshalText(text []byte) error {
 	l.IsActive = isActive
 	l.MacAddress = macAddress
 	l.Hostname = hostname
+	l.LeaseStart = leaseStart
+	l.LeaseEnd = leaseEnd
 	l.publish()
 	return nil
 }
@@ -142,6 +160,54 @@ func (l *Lease) extractHostname(lines []string) (string, error) {
 
 	hostname := strings.ReplaceAll(s[1], `"`, "")
 	return hostname, nil
+}
+
+func (l *Lease) extractLeaseStart(lines []string) (time.Time, error) {
+	// starts 6 2021/02/20 14:11:36;
+	var lineIdx int
+	leaseStartError := &InvalidLeaseFormatError{Arg: "lease starts"}
+	if lineIdx = findLineWithPrefix(lines, "starts"); lineIdx < 0 {
+		return time.Time{}, errors.Wrap(leaseStartError, "'starts' is absent")
+	}
+
+	line := lines[lineIdx]
+	line = strings.TrimSpace(line)
+	line = strings.TrimSuffix(line, ";")
+	s := strings.Split(line, " ")
+	if len(s) < 4 {
+		return time.Time{}, leaseStartError
+	}
+
+	rawStartLeaseTime := fmt.Sprintf("%s %s", s[2], s[3])
+	leaseStart, err := time.Parse(timeLayout, rawStartLeaseTime)
+	if err != nil {
+		return time.Time{}, errors.Wrap(err, leaseStartError.Error())
+	}
+	return leaseStart, nil
+}
+
+func (l *Lease) extractLeaseEnd(lines []string) (time.Time, error) {
+	// ends 6 2021/02/20 14:21:36;
+	var lineIdx int
+	leaseEndError := &InvalidLeaseFormatError{Arg: "lease ends"}
+	if lineIdx = findLineWithPrefix(lines, "ends"); lineIdx < 0 {
+		return time.Time{}, errors.Wrap(leaseEndError, "'ends' is absent")
+	}
+
+	line := lines[lineIdx]
+	line = strings.TrimSpace(line)
+	line = strings.TrimSuffix(line, ";")
+	s := strings.Split(line, " ")
+	if len(s) < 4 {
+		return time.Time{}, leaseEndError
+	}
+
+	rawEndLeaseTime := fmt.Sprintf("%s %s", s[2], s[3])
+	leaseEnd, err := time.Parse(timeLayout, rawEndLeaseTime)
+	if err != nil {
+		return time.Time{}, errors.Wrap(err, leaseEndError.Error())
+	}
+	return leaseEnd, nil
 }
 
 func findLineWithPrefix(lines []string, prefix string) int {

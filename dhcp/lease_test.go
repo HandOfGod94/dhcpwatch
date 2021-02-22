@@ -4,6 +4,7 @@ import (
 	"github.com/handofgod94/dhcpwatch/dhcp"
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
 const (
@@ -24,7 +25,13 @@ lease 192.168.0.1 {
 	invalidLease = `foo {bar;}`
 )
 
+var (
+	leaseStart = time.Date(2021, 2, 20, 14, 11, 36, 0, time.UTC)
+	leaseEnd   = time.Date(2021, 2, 20, 14, 21, 36, 0, time.UTC)
+)
+
 func TestLease_UnmarshalText(t *testing.T) {
+
 	tests := []struct {
 		name    string
 		fields  dhcp.Lease
@@ -38,6 +45,8 @@ func TestLease_UnmarshalText(t *testing.T) {
 				Ip:         "192.168.0.1",
 				MacAddress: "12:ab:CD:78:90:91",
 				IsActive:   true,
+				LeaseStart: leaseStart,
+				LeaseEnd:   leaseEnd,
 			},
 			args:    []byte(validLease),
 			wantErr: false,
@@ -48,10 +57,16 @@ func TestLease_UnmarshalText(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name:   "should return empty for invalid mac address",
-			fields: dhcp.Lease{Ip: "192.168.0.1"},
+			name: "should return empty for invalid mac address",
+			fields: dhcp.Lease{
+				Ip:         "192.168.0.1",
+				LeaseStart: leaseStart,
+				LeaseEnd:   leaseEnd,
+			},
 			args: []byte(`
 					lease 192.168.0.1 {
+  						starts 6 2021/02/20 14:11:36;
+  						ends 6 2021/02/20 14:21:36;
 						hardware ethernet fo:ba:rf:iz;
 					}`),
 			wantErr: false,
@@ -62,10 +77,14 @@ func TestLease_UnmarshalText(t *testing.T) {
 				Ip:         "192.168.0.1",
 				IsActive:   true,
 				MacAddress: "12:ab:CD:78:90:91",
+				LeaseStart: leaseStart,
+				LeaseEnd:   leaseEnd,
 			},
 			args: []byte(`
 					lease 192.168.0.1 {
   						binding state active;
+  						starts 6 2021/02/20 14:11:36;
+  						ends 6 2021/02/20 14:21:36;
   						hardware ethernet 12:ab:CD:78:90:91;
 					}`),
 			wantErr: false,
@@ -78,6 +97,8 @@ func TestLease_UnmarshalText(t *testing.T) {
 				Ip:         tt.fields.Ip,
 				MacAddress: tt.fields.MacAddress,
 				IsActive:   tt.fields.IsActive,
+				LeaseStart: tt.fields.LeaseStart,
+				LeaseEnd:   tt.fields.LeaseEnd,
 			}
 			actual := dhcp.Lease{}
 			err := actual.UnmarshalText(tt.args)
