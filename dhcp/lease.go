@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/handofgod94/dhcpwatch/instrument"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	"regexp"
 	"strconv"
 	"strings"
@@ -79,14 +78,13 @@ func (l *Lease) UnmarshalText(text []byte) error {
 }
 
 func (l *Lease) publish() {
-	logrus.Info("publishing prometheus events")
 	instrument.DhcpTable.WithLabelValues(
 		l.Hostname,
 		l.Ip,
 		l.MacAddress,
 		strconv.FormatBool(l.IsActive),
 		strconv.FormatInt(l.LeaseEnd.Unix(), 10),
-	).SetToCurrentTime()
+	).Set(float64(l.LeaseEnd.Unix()))
 }
 
 func (l *Lease) extractIp(line string) (string, error) {
