@@ -19,21 +19,19 @@ func Start() {
 
 	go func() {
 		for {
-			select {
-			case event, ok := <-watcher.Events:
-				if !ok {
-					logrus.WithField("Ok", ok).Errorf("failed while watching event")
-					return
-				}
+			event, ok := <-watcher.Events
+			if !ok {
+				logrus.WithField("Ok", ok).Errorf("failed while watching event")
+				return
+			}
 
-				if event.Op&fsnotify.Write == fsnotify.Write {
-					logrus.Info("received file modified event")
-					leaseDb, err := dhcp.ReadDatabase(event.Name)
-					if err != nil {
-						logrus.WithError(err).Error("failed to read")
-					}
-					logrus.WithField("db", leaseDb).Debugf("lease db loaded successfully")
+			if event.Op&fsnotify.Write == fsnotify.Write {
+				logrus.Info("received file modified event")
+				leaseDb, err := dhcp.ReadDatabase(event.Name)
+				if err != nil {
+					logrus.WithError(err).Error("failed to read")
 				}
+				logrus.WithField("db", leaseDb).Debugf("lease db loaded successfully")
 			}
 		}
 	}()

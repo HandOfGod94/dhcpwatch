@@ -10,5 +10,5 @@ var (
 		Namespace: "router",
 		Name:      "dhcp_table",
 		Help:      "dhcp table containing ip assignment",
-	}, []string{"hostname", "ip_address", "mac_address", "is_active"})
+	}, []string{"hostname", "ip_address", "mac_address", "is_active", "lease_end"})
 )

@@ -18,6 +18,8 @@ func TestLeaseDatabase_UnmarshalText_WithValidLease(t *testing.T) {
 		Ip:         "192.168.0.1",
 		MacAddress: "12:ab:CD:78:90:91",
 		IsActive:   true,
+		LeaseStart: leaseStart,
+		LeaseEnd:   leaseEnd,
 	}
 	expected := dhcp.LeaseDatabase{Leases: []dhcp.Lease{lease, lease}}
 

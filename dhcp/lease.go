@@ -79,11 +79,13 @@ func (l *Lease) UnmarshalText(text []byte) error {
 }
 
 func (l *Lease) publish() {
-	logrus.Debug("publishing prometheus events")
+	logrus.Info("publishing prometheus events")
 	instrument.DhcpTable.WithLabelValues(
 		l.Hostname,
-		l.Ip, l.MacAddress,
+		l.Ip,
+		l.MacAddress,
 		strconv.FormatBool(l.IsActive),
+		strconv.FormatInt(l.LeaseEnd.Unix(), 10),
 	).SetToCurrentTime()
 }
 

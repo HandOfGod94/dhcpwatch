@@ -8,18 +8,37 @@ on:
 
 jobs:
 
-  build:
+  lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.15
+      - name: Setup lint tools
+        run: |
+          go get github.com/fzipp/gocyclo/cmd/gocyclo
+          go get github.com/uudashr/gocognit/cmd/gocognit
+          go get honnef.co/go/tools/cmd/staticcheck
+      - name: Staticcheck
+        run: staticcheck -fail ./...
+      - name: Cyclometric Complexity
+        run: gocyclo -over 15 .
+      - name: Cognitive Complexity
+        run: gocognit -over 15 .
 
+  build:
+    runs-on: ubuntu-latest
+    needs:
+      - lint
+    steps:
+    - uses: actions/checkout@v2
     - name: Set up Go
       uses: actions/setup-go@v2
       with:
         go-version: 1.15
-
     - name: Build
       run: make build
-
     - name: Test
       run: make test
