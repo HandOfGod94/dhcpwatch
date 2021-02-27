@@ -5,8 +5,14 @@ all: clean fmt tidy build
 clean:
 	rm -rf out/
 
-test:
-	go test -cover -count=1 -race ./...
+quality-check:
+	staticcheck ./...
+	gocyclo -over 15 .
+	gocognit -over 15 .
+
+test: quality-check
+	go test -cover -count=1 -coverprofile=coverage.out -race ./...
+	go tool cover -func=coverage.out
 
 tidy:
 	go mod tidy -v
@@ -23,11 +29,15 @@ pi-build:
 fmt:
 	go fmt ./...
 
-setup-tools:
-	docker pull vektra/mockery:v2.5.1
-
 run: clean dev
 	./out/$(APP_NAME)
 
 genmock:
-	docker run --rm -v $$(pwd):/src -w /src vektra/mockery:v2.5.1 --all
+	mockery --all
+
+setup-tools:
+	cd /tmp; go get github.com/fzipp/gocyclo/cmd/gocyclo; cd -
+	cd /tmp: go get github.com/uudashr/gocognit/cmd/gocognit; cd -
+	cd /tmp: go get honnef.co/go/tools/cmd/staticcheck; cd -
+	cd /tmp; go get -u github.com/mcubik/goverreport; cd -
+	cd /tmp; GO111MODULE=on go get github.com/vektra/mockery/v2@v2.5.1; cd -
