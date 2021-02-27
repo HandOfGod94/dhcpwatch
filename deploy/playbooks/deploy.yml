@@ -1,0 +1,18 @@
+---
+- hosts: pi
+  remote_user: pi
+
+  tasks:
+    - name: Create binary app for Raspberry Pi
+      local_action: shell cd ../../ && make pi-build
+
+    - name: Create Apps directory to deploy
+      ansible.builtin.file:
+        path: ~/apps
+
+    - name: Deploy app to raspberry pi
+      copy:
+        src: ../../out/dhcpwatch-pi
+        dest: ~/apps/dhcpwatch-pi
+        mode: preserve
+        force: yes
