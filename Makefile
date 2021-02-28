@@ -27,7 +27,7 @@ pi-build:
 	env GOOS=linux GOARCH=arm go build -v -ldflags "-w" -o out/$(APP_NAME)-pi main.go
 
 .PHONY: deploy
-deploy:
+deploy: pi-build
 	ansible-playbook -i deploy/playbooks/hosts deploy/playbooks/deploy.yml -k
 
 fmt:

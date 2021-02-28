@@ -11,6 +11,9 @@ import (
 
 func Start() {
 	logrus.SetLevel(config.LogLevel())
+	logrus.SetFormatter(&logrus.TextFormatter{
+		FullTimestamp: true,
+	})
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		logrus.Fatal(err)

@@ -1,0 +1,27 @@
+---
+- hosts: pi
+  remote_user: pi
+  roles:
+    - cloudalchemy.prometheus
+    - cloudalchemy.node-exporter
+  vars:
+    node_exporter_version: 1.1.0
+    prometheus_version: 2.24.1
+    prometheus_storage_retention: "14d"
+    prometheus_storage_retention_size: "2GB"
+    prometheus_scrape_configs:
+      - job_name: "prometheus"
+        scrape_interval: "30s"
+        metrics_path: "/metrics"
+        static_configs:
+          - targets: ["localhost:9090"]
+      - job_name: "node_status"
+        scrape_interval: "30s"
+        metrics_path: "/metrics"
+        static_configs:
+          - targets: ["localhost:9100"]
+      - job_name: "internet_speed"
+        scrape_interval: "30s"
+        metrics_path: "/metrics"
+        static_configs:
+          - targets: ["localhost:8080"]
