@@ -1,6 +1,7 @@
 # dhcpwatch
 
 [![build](https://github.com/HandOfGod94/dhcpwatch/actions/workflows/build.yml/badge.svg)](https://github.com/HandOfGod94/dhcpwatch/actions/workflows/build.yml)
+![go-version](https://img.shields.io/badge/go-1.15-blue)
 
 It watches dhcp database file changes and exports
 prometheus metrics which can visualized as table on grafana.
@@ -21,6 +22,3 @@ make build
 # build binary for raspberry pi
 make pi-build
 ```
-
-### Tech
-- Go: 1.15
