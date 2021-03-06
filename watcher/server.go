@@ -20,28 +20,7 @@ func Start() {
 	}
 	defer watcher.Close()
 
-	go func() {
-		for {
-			select {
-			case event, ok := <-watcher.Events:
-				if !ok {
-					logrus.WithField("Ok", ok).Errorf("failed while watching event")
-					return
-				}
-
-				if event.Op&fsnotify.Write == fsnotify.Write {
-					logrus.Info("received file modified event")
-					leaseDb, err := dhcp.ReadDatabase(event.Name)
-					if err != nil {
-						logrus.WithError(err).Error("failed to read")
-					}
-					logrus.WithField("db", leaseDb).Debugf("lease db loaded successfully")
-				}
-			case err := <-watcher.Errors:
-				logrus.WithError(err).Error("failed to watch file for changes")
-			}
-		}
-	}()
+	go startWatcher(watcher)
 
 	err = watcher.Add(config.DhcpDbFilePath())
 	if err != nil {
@@ -53,4 +32,27 @@ func Start() {
 	logrus.WithField("Address", config.Addr()).Info("Starting server")
 	http.Handle("/metrics", promhttp.Handler())
 	logrus.Fatal(http.ListenAndServe(config.Addr(), nil))
+}
+
+func startWatcher(watcher *fsnotify.Watcher) {
+	for {
+		select {
+		case event, ok := <-watcher.Events:
+			if !ok {
+				logrus.WithField("Ok", ok).Errorf("failed while watching event")
+				return
+			}
+
+			if event.Op&fsnotify.Write == fsnotify.Write {
+				logrus.Info("received file modified event")
+				leaseDb, err := dhcp.ReadDatabase(event.Name)
+				if err != nil {
+					logrus.WithError(err).Error("failed to read")
+				}
+				logrus.WithField("db", leaseDb).Debugf("lease db loaded successfully")
+			}
+		case err := <-watcher.Errors:
+			logrus.WithError(err).Error("failed to watch file for changes")
+		}
+	}
 }

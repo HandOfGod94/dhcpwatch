@@ -30,6 +30,9 @@ pi-build:
 deploy: pi-build
 	ansible-playbook -i deploy/playbooks/hosts deploy/playbooks/deploy.yml -k
 
+deploy-prometheus:
+	ansible-playbook -i deploy/playbooks/hosts deploy/playbooks/prometheus.yml -k
+
 fmt:
 	go fmt ./...
 
@@ -40,8 +43,8 @@ genmock:
 	mockery --all
 
 setup-tools:
-	cd /tmp; go get github.com/fzipp/gocyclo/cmd/gocyclo; cd -
-	cd /tmp: go get github.com/uudashr/gocognit/cmd/gocognit; cd -
-	cd /tmp: go get honnef.co/go/tools/cmd/staticcheck; cd -
-	cd /tmp; go get -u github.com/mcubik/goverreport; cd -
-	cd /tmp; GO111MODULE=on go get github.com/vektra/mockery/v2@v2.5.1; cd -
+	cd && GO111MODULE=on go get github.com/fzipp/gocyclo/cmd/gocyclo
+	cd && GO111MODULE=on go get github.com/vektra/mockery/v2@v2.5.1
+	cd && go get github.com/uudashr/gocognit/cmd/gocognit
+	cd && go get honnef.co/go/tools/cmd/staticcheck
+	cd && go get -u github.com/mcubik/goverreport

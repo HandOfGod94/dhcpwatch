@@ -30,7 +30,7 @@ type InvalidLeaseFormatError struct {
 }
 
 func (i *InvalidLeaseFormatError) Error() string {
-	err := fmt.Sprint("failed to convert text to lease")
+	err := "failed to convert text to lease"
 	if i.Arg != "" {
 		err = fmt.Sprintf("%s - %v is invalid", err, i.Arg)
 	}
@@ -83,7 +83,6 @@ func (l *Lease) publish() {
 		l.Ip,
 		l.MacAddress,
 		strconv.FormatBool(l.IsActive),
-		strconv.FormatInt(l.LeaseEnd.Unix(), 10),
 	).Set(float64(l.LeaseEnd.Unix()))
 }
 
